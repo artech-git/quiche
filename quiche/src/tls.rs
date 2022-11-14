@@ -36,6 +36,8 @@ use libc::c_long;
 use libc::c_uint;
 use libc::c_void;
 
+use once_cell::sync::Lazy;
+
 use crate::Error;
 use crate::Result;
 
@@ -123,12 +125,10 @@ struct SSL_QUIC_METHOD {
         extern fn(ssl: *mut SSL, level: crypto::Level, alert: u8) -> c_int,
 }
 
-lazy_static::lazy_static! {
-    /// BoringSSL Extra Data Index for Quiche Connections
-    pub static ref QUICHE_EX_DATA_INDEX: c_int = unsafe {
-        SSL_get_ex_new_index(0, ptr::null(), ptr::null(), ptr::null(), ptr::null())
-    };
-}
+/// BoringSSL Extra Data Index for Quiche Connections
+pub static QUICHE_EX_DATA_INDEX: Lazy<c_int> = Lazy::new(|| unsafe {
+    SSL_get_ex_new_index(0, ptr::null(), ptr::null(), ptr::null(), ptr::null())
+});
 
 static QUICHE_STREAM_METHOD: SSL_QUIC_METHOD = SSL_QUIC_METHOD {
     set_read_secret,
